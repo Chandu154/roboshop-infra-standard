@@ -51,3 +51,22 @@ resource "aws_ssm_parameter" "user_sg_id" {
   type  = "String"
   value = module.user_sg.security_group_id # module should have the output declaration
 }
+
+resource "aws_ssm_parameter" "cart_sg_id" {
+  name  = "/${var.project_name}/${var.env}/cart_sg_id"
+  type  = "String"
+  value = module.cart_sg.security_group_id # module should have the output declaration
+}
+
+resource "aws_ssm_parameter" "mysql_sg_id" {
+  name  = "/${var.project_name}/${var.env}/mysql_sg_id"
+  type  = "String"
+  value = module.mysql_sg.security_group_id # module should have the output declaration
+}
+
+resource "aws_ssm_parameter" "shipping_sg_id" {
+  name  = "/${var.project_name}/${var.env}/shipping_sg_id"
+  type  = "String"
+  value = module.shipping_sg.security_group_id # module should have the output declaration
+}
+
