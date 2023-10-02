@@ -181,6 +181,39 @@ module "shipping_sg" {
     )
 }
 
+module "rabbitmq_sg" {
+  source = "../../terraform-aws-securitygroup"
+    sg_name= "rabbitmq"
+    sg_description = "allowing  traffic"
+    project_name = var.project_name
+    #sg_ingress_rules = var.sg_ingress_rules
+    vpc_id = data.aws_ssm_parameter.vpc_id.value
+    common_tags = merge(
+        var.common_tags,
+        {
+            Component = "rabbitmq"
+            Name = "rabbitmq"
+        }
+    )
+}
+
+module "payment_sg" {
+  source = "../../terraform-aws-securitygroup"
+    sg_name= "payment"
+    sg_description = "allowing  traffic"
+    project_name = var.project_name
+    #sg_ingress_rules = var.sg_ingress_rules
+    vpc_id = data.aws_ssm_parameter.vpc_id.value
+    common_tags = merge(
+        var.common_tags,
+        {
+            Component = "payment"
+            Name = "payment"
+        }
+    )
+}
+
+
 # making the rule to connect the only from our home ip
 resource "aws_security_group_rule" "vpn" {
   type              = "ingress"
@@ -423,6 +456,19 @@ resource "aws_security_group_rule" "cart_vpn" {
 }
 
 
+resource "aws_security_group_rule" "catalogue_cart" {
+  type              = "ingress"
+  description = "allowing port number 8080 from catalogue"
+  from_port         = 8080
+  to_port           = 8080
+  protocol          = "tcp"
+  source_security_group_id = module.cart_sg.security_group_id
+  #cidr_blocks       = ["${chomp(data.http.myip.body)}/32"]
+  #ipv6_cidr_blocks  = [aws_vpc.example.ipv6_cidr_block]
+  security_group_id = module.catalogue_sg.security_group_id
+}
+
+
 
 resource "aws_security_group_rule" "redis_cart" {
   type              = "ingress"
@@ -486,3 +532,81 @@ resource "aws_security_group_rule" "shpping_vpn" {
   #ipv6_cidr_blocks  = [aws_vpc.example.ipv6_cidr_block]
   security_group_id = module.shipping_sg.security_group_id
 }
+
+
+resource "aws_security_group_rule" "rabbitmq_vpn" {
+  type              = "ingress"
+  description = "allowing port number 22 from vpn"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  source_security_group_id = module.vpn_sg.security_group_id
+  #cidr_blocks       = ["${chomp(data.http.myip.body)}/32"]
+  #ipv6_cidr_blocks  = [aws_vpc.example.ipv6_cidr_block]
+  security_group_id = module.rabbitmq_sg.security_group_id
+}
+
+resource "aws_security_group_rule" "rabbitmq_payment" {
+  type              = "ingress"
+  description = "allowing port number 5672 from vpn"
+  from_port         = 5672
+  to_port           = 5672
+  protocol          = "tcp"
+  source_security_group_id = module.payment_sg.security_group_id
+  #cidr_blocks       = ["${chomp(data.http.myip.body)}/32"]
+  #ipv6_cidr_blocks  = [aws_vpc.example.ipv6_cidr_block]
+  security_group_id = module.rabbitmq_sg.security_group_id
+}
+
+resource "aws_security_group_rule" "payment_vpn" {
+  type              = "ingress"
+  description = "allowing port number 22 from vpn"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  source_security_group_id = module.vpn_sg.security_group_id
+  #cidr_blocks       = ["${chomp(data.http.myip.body)}/32"]
+  #ipv6_cidr_blocks  = [aws_vpc.example.ipv6_cidr_block]
+  security_group_id = module.payment_sg.security_group_id
+}
+
+resource "aws_security_group_rule" "payment_app_alb" {
+  type              = "ingress"
+  description = "allowing port number 8080 from app"
+  from_port         = 8080
+  to_port           = 8080
+  protocol          = "tcp"
+  source_security_group_id = module.app_alb_sg.security_group_id
+  #cidr_blocks       = ["${chomp(data.http.myip.body)}/32"]
+  #ipv6_cidr_blocks  = [aws_vpc.example.ipv6_cidr_block]
+  security_group_id = module.payment_sg.security_group_id
+}
+
+resource "aws_security_group_rule" "mongodb_cart" {
+  type              = "ingress"
+  description = "allowing port number 27017 from cart"
+  from_port         = 27017
+  to_port           = 27017
+  protocol          = "tcp"
+  source_security_group_id = module.cart_sg.security_group_id
+  #cidr_blocks       = ["${chomp(data.http.myip.body)}/32"]
+  #ipv6_cidr_blocks  = [aws_vpc.example.ipv6_cidr_block]
+  security_group_id = module.mongodb_sg.security_group_id
+}
+
+resource "aws_security_group_rule" "user_cart" {
+  type              = "ingress"
+  description = "allowing port number 8080 from cart"
+  from_port         = 8080
+  to_port           = 8080
+  protocol          = "tcp"
+  source_security_group_id = module.cart_sg.security_group_id
+  #cidr_blocks       = ["${chomp(data.http.myip.body)}/32"]
+  #ipv6_cidr_blocks  = [aws_vpc.example.ipv6_cidr_block]
+  security_group_id = module.user_sg.security_group_id
+}
+
+
+
+
+

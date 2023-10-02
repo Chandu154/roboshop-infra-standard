@@ -70,3 +70,15 @@ resource "aws_ssm_parameter" "shipping_sg_id" {
   value = module.shipping_sg.security_group_id # module should have the output declaration
 }
 
+resource "aws_ssm_parameter" "rabbitmq_sg_id" {
+  name  = "/${var.project_name}/${var.env}/rabbitmq_sg_id"
+  type  = "String"
+  value = module.rabbitmq_sg.security_group_id # module should have the output declaration
+}
+
+resource "aws_ssm_parameter" "payment_sg_id" {
+  name  = "/${var.project_name}/${var.env}/payment_sg_id"
+  type  = "String"
+  value = module.payment_sg.security_group_id # module should have the output declaration
+}
+
